@@ -1,0 +1,3 @@
+requests>=2.8.0
+boto3>=1.36.17
+demisto-py>=3.2.18
