@@ -8,6 +8,8 @@ SUPPORTED_STORES = ["S3"]
 
 class ArtifactProvider:
     def __init__(self, *, location: str = "S3", s3_bucket_name: str | None = None, verify_ssl: str | bool = True) -> None:
+        if location is None:
+            return
         if location not in SUPPORTED_STORES:
             msg = f"Artifact store {location} is not yet implemented."
             raise NotImplementedError(msg)
