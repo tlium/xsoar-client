@@ -21,6 +21,12 @@ class ArtifactProvider:
         self.boto3_session = boto3.session.Session()  # pyright: ignore  # noqa: PGH003
         self.s3 = self.boto3_session.resource("s3")
 
+        self._test_connectivity()
+
+    def _test_connectivity(self) -> None:
+        # TODO: test AWS/S3 connectivity here and raise sensible exeptions
+        pass
+
     def _is_available_s3(self, *, pack_id: str, pack_version: str) -> bool:
         """Returns True if pack is available, False otherwise"""
         key_name = f"content/packs/{pack_id}/{pack_version}/{pack_id}.zip"
