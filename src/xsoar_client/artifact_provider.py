@@ -25,7 +25,14 @@ class ArtifactProvider:
 
     def _test_connectivity(self) -> None:
         # TODO: test AWS/S3 connectivity here and raise sensible exeptions
-        pass
+        try:
+            #Create an S3 client
+            s3 = boto3.client('s3')
+
+            #List buckets to test connectivity
+            response = s3.list_buckets()
+
+            print("Connected to S3 successfully.")
 
     def _is_available_s3(self, *, pack_id: str, pack_version: str) -> bool:
         """Returns True if pack is available, False otherwise"""
