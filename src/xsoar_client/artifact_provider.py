@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError, EndpointConnectionError
+from botocore.httpsession import ConnectTimeoutError
 from packaging import version
 
 SUPPORTED_STORES = ["S3"]
@@ -20,19 +22,31 @@ class ArtifactProvider:
         self.verify_ssl = verify_ssl
         self.boto3_session = boto3.session.Session()  # pyright: ignore  # noqa: PGH003
         self.s3 = self.boto3_session.resource("s3")
+        self.check_s3_connection()
 
-        self._test_connectivity()
-
-    def _test_connectivity(self) -> None:
+    def check_s3_connection(self) -> None:
         # TODO: test AWS/S3 connectivity here and raise sensible exeptions
         try:
-            #Create an S3 client
-            s3 = boto3.client('s3')
-
-            #List buckets to test connectivity
-            response = s3.list_buckets()
+            bucket = self.s3.Bucket(self.s3_bucket_name) #lager en bucketresource object for bucket_name
+            bucket.load()
 
             print("Connected to S3 successfully.")
+
+        except NoCredentialsError as ex:
+            msg = "AWS credentials not found."
+            raise RuntimeError(msg) from ex
+        except PartialCredentialsError as ex:
+            msg = "Incomplete AWS credentials."
+            raise RuntimeError(msg) from ex
+        except EndpointConnectionError as ex:
+            msg = "Could not connect to the S3"
+            raise RuntimeError(msg) from ex
+        except ConnectTimeoutError as ex:
+            msg = "Connection timed out"
+            raise RuntimeError(msg) from ex
+        except Exception as ex:
+            print(f"An error occurred: {ex}")
+
 
     def _is_available_s3(self, *, pack_id: str, pack_version: str) -> bool:
         """Returns True if pack is available, False otherwise"""
