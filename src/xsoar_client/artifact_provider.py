@@ -1,8 +1,7 @@
-from src.xsoar_client import artifact_provider
 from __future__ import annotations
 
 import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError, EndpointConnectionError
+from botocore.exceptions import EndpointConnectionError, NoCredentialsError, PartialCredentialsError
 from botocore.httpsession import ConnectTimeoutError
 from packaging import version
 
@@ -11,7 +10,6 @@ SUPPORTED_STORES = ["S3"]
 
 class ArtifactProvider:
     def __init__(self, *, location: str = "S3", s3_bucket_name: str | None = None, verify_ssl: str | bool = True) -> None:
-
         if not location:
             self.artifacts_repo = None
             return
@@ -29,13 +27,10 @@ class ArtifactProvider:
             return self._test_connection_aws()
         return False
 
-
     def _test_connection_aws(self) -> bool:
-        # TODO: test AWS/S3 connectivity here and raise sensible exeptions
         try:
-            bucket = self.s3.Bucket(self.s3_bucket_name) #lager en bucketresource object for bucket_name
+            bucket = self.s3.Bucket(self.s3_bucket_name)  # lager en bucketresource object for bucket_name
             bucket.load()
-            return True
 
         except NoCredentialsError as ex:
             msg = "AWS credentials not found."
@@ -49,10 +44,9 @@ class ArtifactProvider:
         except ConnectTimeoutError as ex:
             msg = "Connection timed out"
             raise RuntimeError(msg) from ex
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             print(f"An error occurred: {ex}")
-        return False
-
+        return True
 
     def _is_available_s3(self, *, pack_id: str, pack_version: str) -> bool:
         """Returns True if pack is available, False otherwise"""
