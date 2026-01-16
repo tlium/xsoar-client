@@ -25,6 +25,7 @@ dependencies = [
     "boto3 >= 1.36.17",
     "demisto-py>=3.2.18",
     "azure-storage-blob>=12.28.0",
+    "azure-identity>=1.25.1",
 ]
 
 [project.urls]
