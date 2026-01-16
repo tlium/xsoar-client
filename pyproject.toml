@@ -20,7 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = ["requests >= 2.8.0", "boto3 >= 1.36.17", "demisto-py >= 3.2.18"]
+dependencies = [
+    "requests >= 2.8.0",
+    "boto3 >= 1.36.17",
+    "demisto-py>=3.2.18",
+    "azure-storage-blob>=12.28.0",
+]
 
 [project.urls]
 Documentation = "https://github.com/tlium/xsoar-client#readme"
@@ -52,7 +57,3 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 addopts = "-ra -q"
 testpaths = ["tests"]
 minversion = "6.0"
-
-[tool.pyright]
-venvPath = "."
-venv = "venv"
