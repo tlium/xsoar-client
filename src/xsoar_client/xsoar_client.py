@@ -37,6 +37,8 @@ class Client:
         server_version: int,
         artifacts_location: str = "S3",
         s3_bucket_name: str = "",
+        azure_storage_account_url: str = "",
+        azure_storage_container_name: str = "",
     ) -> None:
         self.api_token = None
         self.server_url = None
@@ -48,7 +50,12 @@ class Client:
         self._set_credentials(api_token, server_url, xsiam_auth_id)
         self.http_timeout = HTTP_CALL_TIMEOUT
         self.verify_ssl = verify_ssl
-        self.artifact_provider = ArtifactProvider(location=artifacts_location, s3_bucket_name=s3_bucket_name)
+        self.artifact_provider = ArtifactProvider(
+            location=artifacts_location,
+            s3_bucket_name=s3_bucket_name,
+            azure_storage_account_url=azure_storage_account_url,
+            azure_container_name=azure_storage_container_name,
+        )
         if self.server_version > XSOAR_OLD_VERSION:
             self.demisto_py_instance = demisto_client.configure(
                 base_url=self.server_url,
@@ -319,3 +326,6 @@ class Client:
                 update_available.append(tmpobj)
 
         return update_available
+
+    def get_latest_custom_pack_version(self, pack_id: str) -> str:
+        return self.artifact_provider.get_latest_version(pack_id)
