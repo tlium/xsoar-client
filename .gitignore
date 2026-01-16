@@ -2,6 +2,7 @@
 dist
 build
 venv
+scratch
 .venv
 .coverage
 .pytest_cache
