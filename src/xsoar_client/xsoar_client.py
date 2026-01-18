@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import tarfile
 import tempfile
 from io import BytesIO, StringIO
@@ -12,7 +11,8 @@ import requests
 from demisto_client.demisto_api.rest import ApiException
 from packaging import version
 
-from .artifact_provider import ArtifactProvider
+from .artifact_providers import BaseArtifactProvider
+from .config import ClientConfig
 
 if TYPE_CHECKING:
     from requests.models import Response
@@ -29,76 +29,20 @@ class Client:
     def __init__(
         self,
         *,
-        verify_ssl: bool | str = False,
-        api_token: str = "",
-        server_url: str = "",
-        xsiam_auth_id: str = "",
-        custom_pack_authors: list[str],
-        server_version: int,
-        artifacts_location: str = "S3",
-        s3_bucket_name: str = "",
-        azure_storage_account_url: str = "",
-        azure_storage_container_name: str = "",
+        config: ClientConfig,
+        artifact_provider: BaseArtifactProvider | None = None,
     ) -> None:
-        self.api_token = None
-        self.server_url = None
-        self.xsiam_auth_id = None
-        self.server_version = server_version
+        self.config = config
+        self.artifact_provider = artifact_provider
         self.installed_packs = None
-        self.custom_pack_authors = custom_pack_authors
         self.installed_expired = None
-        self._set_credentials(api_token, server_url, xsiam_auth_id)
         self.http_timeout = HTTP_CALL_TIMEOUT
-        self.verify_ssl = verify_ssl
-        self.artifact_provider = ArtifactProvider(
-            location=artifacts_location,
-            s3_bucket_name=s3_bucket_name,
-            azure_storage_account_url=azure_storage_account_url,
-            azure_container_name=azure_storage_container_name,
+        self.demisto_py_instance = demisto_client.configure(
+            base_url=self.config.server_url,
+            api_key=self.config.api_token,
+            auth_id=self.config.xsiam_auth_id,
+            verify_ssl=self.config.verify_ssl,
         )
-        if self.server_version > XSOAR_OLD_VERSION:
-            self.demisto_py_instance = demisto_client.configure(
-                base_url=self.server_url,
-                api_key=self.api_token,
-                auth_id=self.xsiam_auth_id,
-                verify_ssl=self.verify_ssl,
-            )
-        else:
-            self.demisto_py_instance = demisto_client.configure(
-                base_url=self.server_url,
-                api_key=self.api_token,
-                verify_ssl=self.verify_ssl,
-            )
-
-    def _set_credentials(
-        self,
-        api_token: str,
-        server_url: str,
-        xsiam_auth_id: str,
-    ) -> None:
-        if api_token and server_url:
-            self.api_token = api_token
-            self.server_url = server_url
-            self.xsiam_auth_id = str(xsiam_auth_id)
-
-            """
-            This should be moved somewhere else
-            # We only use xsiam_auth_id for XSOAR 8. Assuming XSOAR 8 server if this variable contains any value
-            if int(self.server_version) > XSOAR_OLD_VERSION:
-                self.server_url = f"{server_url}/xsoar/public/v1"
-            """
-
-            return
-        if (api_token and not server_url) or (server_url and not api_token):
-            msg = "If api_token is specified in constructor, then server_url must also be specified (or vice versa)."
-            raise RuntimeError(msg)
-        try:
-            self.api_token = os.environ["DEMISTO_API_KEY"]
-            self.server_url = os.environ["DEMISTO_BASE_URL"]
-            self.xsiam_auth_id = os.environ.get("XSIAM_AUTH_ID", None)
-        except KeyError as ex:
-            msg = "Cannot find all required environment varaibles. Please refer to the docs for required environment variables."
-            raise ValueError(msg) from ex
 
     def _make_request(
         self,
@@ -110,14 +54,14 @@ class Client:
         data: dict | None = None,
     ) -> Response:
         """Wrapper for Requests. Sets the appropriate headers and authentication token."""
-        url = f"{self.server_url}{endpoint}"
+        url = f"{self.config.server_url}{endpoint}"
         headers = {
             "Accept": "application/json",
-            "Authorization": self.api_token,
+            "Authorization": self.config.api_token,
             "Content-Type": "application/json",
         }
-        if self.xsiam_auth_id:
-            headers["x-xdr-auth-id"] = self.xsiam_auth_id
+        if self.config.xsiam_auth_id:
+            headers["x-xdr-auth-id"] = self.config.xsiam_auth_id
         return requests.request(
             method=method,
             url=url,
@@ -125,7 +69,7 @@ class Client:
             json=json,
             files=files,
             data=data,
-            verify=self.verify_ssl,
+            verify=self.config.verify_ssl,
             timeout=self.http_timeout,
         )
 
@@ -157,6 +101,8 @@ class Client:
 
     def is_pack_available(self, *, pack_id: str, version: str, custom: bool) -> bool:
         if custom:
+            if not self.artifact_provider:
+                raise RuntimeError("No artifact provider configured")
             return self.artifact_provider.is_available(pack_id=pack_id, pack_version=version)
         baseurl = "https://marketplace.xsoar.paloaltonetworks.com/content/packs"
         path = f"/{pack_id}/{version}/{pack_id}.zip"
@@ -185,7 +131,7 @@ class Client:
         response.raise_for_status()
 
     def test_connectivity(self) -> bool:
-        if self.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
+        if self.config.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
             endpoint = "/xsoar/health"
         else:
             endpoint = "/health"
@@ -199,7 +145,7 @@ class Client:
 
     def get_installed_packs(self) -> list[dict]:
         """Fetches a JSON blob containing a complete list of installed packages."""
-        if self.server_version > XSOAR_OLD_VERSION:
+        if self.config.server_version > XSOAR_OLD_VERSION:
             endpoint = "/xsoar/public/v1/contentpacks/metadata/installed"
         else:
             endpoint = "/contentpacks/metadata/installed"
@@ -215,7 +161,7 @@ class Client:
 
     def get_installed_expired_packs(self) -> list[dict]:
         """Fetches a JSON blob containing a complete list of installed expired packages."""
-        if self.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
+        if self.config.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
             endpoint = "/xsoar/contentpacks/installed-expired"
         else:
             endpoint = "/contentpacks/installed-expired"
@@ -241,7 +187,7 @@ class Client:
         return response.json()
 
     def create_case(self, data: dict) -> dict:
-        if self.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
+        if self.config.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
             endpoint = "/xsoar/public/v1/incident"
         else:
             endpoint = "/incident"
@@ -257,6 +203,8 @@ class Client:
 
     def download_pack(self, pack_id: str, pack_version: str, custom: bool) -> bytes:  # noqa: FBT001
         if custom:
+            if not self.artifact_provider:
+                raise RuntimeError("No artifact provider configured")
             return self.artifact_provider.download(pack_id=pack_id, pack_version=pack_version)
         """Downloads a upstream content pack from the official XSOAR marketplace."""
         baseurl = "https://marketplace.xsoar.paloaltonetworks.com/content/packs"
@@ -303,7 +251,9 @@ class Client:
         expired_packs = self.get_installed_expired_packs()
         update_available = []
         for pack in expired_packs:
-            if pack["author"] in self.custom_pack_authors:
+            if pack["author"] in self.config.custom_pack_authors:
+                if not self.artifact_provider:
+                    raise RuntimeError("No artifact provider configured")
                 latest_version = self.artifact_provider.get_latest_version(pack["id"])
                 if latest_version == pack["currentVersion"]:
                     continue
@@ -328,4 +278,6 @@ class Client:
         return update_available
 
     def get_latest_custom_pack_version(self, pack_id: str) -> str:
+        if not self.artifact_provider:
+            raise RuntimeError("No artifact provider configured")
         return self.artifact_provider.get_latest_version(pack_id)
