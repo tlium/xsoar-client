@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .artifact_providers import AzureArtifactProvider, BaseArtifactProvider, S3ArtifactProvider
+from .azure import AzureArtifactProvider
+from .base import BaseArtifactProvider
+from .s3 import S3ArtifactProvider
 
 __all__ = [
     "BaseArtifactProvider",
