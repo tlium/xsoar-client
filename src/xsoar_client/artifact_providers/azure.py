@@ -12,19 +12,23 @@ from .base import BaseArtifactProvider
 class AzureArtifactProvider(BaseArtifactProvider):
     """Azure Blob Storage artifact provider."""
 
-    def __init__(self, *, storage_account_url: str, container_name: str) -> None:
+    def __init__(self, *, storage_account_url: str, container_name: str, access_token: str = "") -> None:
         self.storage_account_url = storage_account_url
         self.container_name = container_name
+        self.access_token = access_token
         self._service = None
         self._container_client = None
 
     @property
     def service(self) -> BlobServiceClient:
         if self._service is None:
-            credential = os.environ.get("SAS_TOKEN")
-            if not credential:
-                raise RuntimeError("Required environment variable SAS_TOKEN is not set.")
-            self._service = BlobServiceClient(account_url=self.storage_account_url, credential=credential)
+            if not self.access_token:
+                access_token = os.environ.get("AZURE_STORAGE_SAS_TOKEN", "")
+                if not access_token:
+                    msg = "Cannot find access token. Either set the environment variable AZURE_STORAGE_SAS_TOKEN or call the constructor with the access_token argument set"
+                    raise RuntimeError(msg)
+                self.access_token = access_token
+            self._service = BlobServiceClient(account_url=self.storage_account_url, credential=self.access_token)
         return self._service
 
     @property
