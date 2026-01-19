@@ -25,9 +25,10 @@ class AzureArtifactProvider(BaseArtifactProvider):
             if not self.access_token:
                 access_token = os.environ.get("AZURE_STORAGE_SAS_TOKEN", "")
                 if not access_token:
-                    msg = "Cannot find access token. Either set the environment variable AZURE_SAS_TOKEN or call the constructor with the access_token argument set"
+                    msg = "Cannot find access token. Either set the environment variable AZURE_STORAGE_SAS_TOKEN or call the constructor with the access_token argument set"
                     raise RuntimeError(msg)
-            self._service = BlobServiceClient(account_url=self.storage_account_url, credential=access_token)
+                self.access_token = access_token
+            self._service = BlobServiceClient(account_url=self.storage_account_url, credential=self.access_token)
         return self._service
 
     @property
