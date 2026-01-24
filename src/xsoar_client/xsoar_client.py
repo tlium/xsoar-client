@@ -22,7 +22,7 @@ JSONType: TypeAlias = dict | list | None
 XSOAR_OLD_VERSION = 6
 HTTP_CALL_TIMEOUT = 10
 
-requests.packages.urllib3.disable_warnings()
+requests.packages.urllib3.disable_warnings()  # ty: ignore[unresolved-attribute]
 
 
 class Client:
@@ -139,7 +139,7 @@ class Client:
             response = self._make_request(endpoint=endpoint, method="GET")
             response.raise_for_status()
         except Exception as ex:
-            msg = "Failed to connect to XSOAR server."
+            msg = "Failed to connect to XSOAR server"
             raise ConnectionError(msg) from ex
         return True
 
