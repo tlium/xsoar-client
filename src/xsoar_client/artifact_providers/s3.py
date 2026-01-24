@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import boto3
-from botocore.exceptions import EndpointConnectionError, NoCredentialsError, PartialCredentialsError
-from botocore.httpsession import ConnectTimeoutError
 from packaging import version
 
 from .base import BaseArtifactProvider
@@ -18,20 +16,13 @@ class S3ArtifactProvider(BaseArtifactProvider):
         self.s3 = self.session.resource("s3")
 
     def test_connection(self) -> bool:
-        try:
-            bucket = self.s3.Bucket(self.bucket_name)
-            bucket.load()
-        except NoCredentialsError as ex:
-            raise RuntimeError("AWS credentials not found.") from ex
-        except PartialCredentialsError as ex:
-            raise RuntimeError("Incomplete AWS credentials.") from ex
-        except EndpointConnectionError as ex:
-            raise RuntimeError("Could not connect to the S3") from ex
-        except ConnectTimeoutError as ex:
-            raise RuntimeError("Connection timed out") from ex
+        """Test connectivity to the configured S3 bucket. This will raise an exception if connection fails."""
+        bucket = self.s3.Bucket(self.bucket_name)
+        bucket.load()
         return True
 
     def is_available(self, *, pack_id: str, pack_version: str) -> bool:
+        """Check if a Pack ID with specific version is available in the configured S3 bucket."""
         key_name = self.get_pack_path(pack_id, pack_version)
         try:
             self.s3.Object(self.bucket_name, key_name).load()
@@ -40,12 +31,14 @@ class S3ArtifactProvider(BaseArtifactProvider):
             return False
 
     def download(self, *, pack_id: str, pack_version: str) -> bytes:
+        """Download a Pack given by ID and version from the configured S3 bucket."""
         key_name = self.get_pack_path(pack_id, pack_version)
         obj = self.s3.Object(bucket_name=self.bucket_name, key=key_name)
         response = obj.get()
         return response["Body"].read()
 
     def get_latest_version(self, pack_id: str) -> str:
+        """Fetch the latest version of a Pack in the configured S3 bucket."""
         client = boto3.client("s3", verify=self.verify_ssl)
         result = client.list_objects_v2(
             Bucket=self.bucket_name,
