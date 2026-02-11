@@ -7,7 +7,7 @@ name = "xsoar-client"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <=3.14"
 license = "MIT"
 keywords = []
 authors = [{ name = "Torbjørn Lium", email = "torben@lium.org" }]
@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "requests >= 2.8.0",
     "boto3 >= 1.36.17",
-    "demisto-py>=3.2.18",
+    "demisto-py>=3.2.22",
     "azure-storage-blob>=12.28.0",
     "azure-identity>=1.25.1",
 ]
