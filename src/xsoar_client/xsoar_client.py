@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import tarfile
 import tempfile
 from io import BytesIO, StringIO
@@ -254,7 +255,12 @@ class Client:
             if pack["author"] in self.config.custom_pack_authors:
                 if not self.artifact_provider:
                     raise RuntimeError("No artifact provider configured")
-                latest_version = self.artifact_provider.get_latest_version(pack["id"])
+                try:
+                    latest_version = self.artifact_provider.get_latest_version(pack["id"])
+                except ValueError:
+                    msg = f"WARNING: cannot find {pack['id']} in artifacts repo"
+                    print(msg, file=sys.stderr)
+                    continue
                 if latest_version == pack["currentVersion"]:
                     continue
                 tmpobj = {
