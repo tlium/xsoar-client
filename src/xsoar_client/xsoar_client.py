@@ -231,7 +231,7 @@ class Client:
         params = {}
         filedata = self.download_pack(pack_id=pack_id, pack_version=pack_version, custom=custom)
         if custom:
-            params["skip_validation"] = "true"
+            params["skip_validation"] = "false"
             params["skip_verify"] = "true"
         else:
             params["skip_validation"] = "false"
