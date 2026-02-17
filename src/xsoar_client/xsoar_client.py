@@ -258,7 +258,7 @@ class Client:
                 try:
                     latest_version = self.artifact_provider.get_latest_version(pack["id"])
                 except ValueError:
-                    msg = f"WARNING: custom pack {pack['id']} installed on XSOAR server, but cannot find pack in artifacts repo"
+                    msg = f"WARNING: custom pack {pack['id']} installed on XSOAR server, but cannot find pack in artifacts repo."
                     print(msg, file=sys.stderr)
                     continue
                 if latest_version == pack["currentVersion"]:
