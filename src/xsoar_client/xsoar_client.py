@@ -227,7 +227,10 @@ class Client:
         return True
 
     def deploy_pack(self, *, pack_id: str, pack_version: str, custom: bool) -> bool:
-        """Downloads a content pack from upstream or artifacts repository (depending on `custom` bool argument)."""
+        """
+        Downloads a content pack from upstream or artifacts repository (depending on `custom` bool argument).
+        Raises RuntimeError from demisto_client.demisto_api.rest.ApiException if upload fails.
+        """
         params = {}
         filedata = self.download_pack(pack_id=pack_id, pack_version=pack_version, custom=custom)
         if custom:
@@ -244,8 +247,8 @@ class Client:
         try:
             self.demisto_py_instance.upload_content_packs(tmp.name, **params)
         except ApiException as ex:
-            print(f"Exception when calling DefaulApi->upload_content_packs: {ex!s}\n")
-            raise RuntimeError from ex
+            msg = f"Exception when calling DefaulApi->upload_content_packs: {ex!s}\n"
+            raise RuntimeError(msg) from ex
         return True
 
     def get_outdated_packs(self) -> list[dict]:
