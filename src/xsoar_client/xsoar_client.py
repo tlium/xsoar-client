@@ -132,10 +132,11 @@ class Client:
         response.raise_for_status()
 
     def test_connectivity(self) -> bool:
+        """Tests connectivity to the XSOAR server."""
         if self.config.server_version > XSOAR_OLD_VERSION:  # noqa: SIM108
-            endpoint = "/xsoar/health"
+            endpoint = "/xsoar/workers/status"
         else:
-            endpoint = "/health"
+            endpoint = "/workers/status"
         try:
             response = self._make_request(endpoint=endpoint, method="GET")
             response.raise_for_status()
