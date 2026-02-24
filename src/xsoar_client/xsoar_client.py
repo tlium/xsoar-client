@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 JSONType: TypeAlias = dict | list | None
 
 XSOAR_OLD_VERSION = 6
-HTTP_CALL_TIMEOUT = 10
+HTTP_CALL_TIMEOUT = 30
 
 requests.packages.urllib3.disable_warnings()  # ty: ignore[unresolved-attribute]
 
@@ -178,13 +178,8 @@ class Client:
         return self.installed_expired
 
     def get_case(self, case_id: int) -> dict:
-        endpoint = "/incidents/search"
-        payload = {
-            "filter": {
-                "query": f"id:{case_id}",
-            },
-        }
-        response = self._make_request(endpoint=endpoint, json=payload, method="POST")
+        endpoint = f"/incident/load/{case_id}"
+        response = self._make_request(endpoint=endpoint, method="GET")
         response.raise_for_status()
         return response.json()
 
