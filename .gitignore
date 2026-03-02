@@ -7,3 +7,4 @@ scratch
 .coverage
 .pytest_cache
 .envrc
+_version.py
