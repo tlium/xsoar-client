@@ -90,6 +90,13 @@ class Client:
                     loaded_files[file_name] = file_data
         return loaded_files
 
+    def get_integrations(self) -> list:
+        """Returns information on all installed integrations and their configured instances"""
+        endpoint = "/integration/instances"
+        response = self._make_request(endpoint=endpoint, method="GET")
+        response.raise_for_status()
+        return response.content
+
     def download_item(self, item_type: str, item_id: str) -> bytes:
         if item_type == "playbook":
             endpoint = f"/{item_type}/{item_id}/yaml"
