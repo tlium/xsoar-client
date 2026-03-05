@@ -107,12 +107,12 @@ class Client:
         response.raise_for_status()
         return response.content
 
-    def get_groups(self) -> str:
+    def get_roles(self) -> str:
         """Returns information on all XSOAR groups"""
         if self.config.server_version < 8:
-            endpoint = "/groups"
+            endpoint = "/roles"
         else:
-            endpoint = "/rbac/get_groups"
+            endpoint = "/rbac/get_roles"
         response = self._make_request(endpoint=endpoint, method="GET")
         response.raise_for_status()
         return response.content
