@@ -90,7 +90,7 @@ class Client:
                     loaded_files[file_name] = file_data
         return loaded_files
 
-    def get_integrations(self) -> list:
+    def get_integrations(self) -> str:
         """Returns information on all installed integrations and their configured instances"""
         endpoint = "/integration/instances"
         response = self._make_request(endpoint=endpoint, method="GET")
