@@ -97,6 +97,36 @@ class Client:
         response.raise_for_status()
         return response.content
 
+    def get_users(self) -> str:
+        """Returns information on all XSOAR users"""
+        if self.config.server_version < 8:
+            endpoint = "/users"
+        else:
+            endpoint = "/rbac/get_users"
+        response = self._make_request(endpoint=endpoint, method="GET")
+        response.raise_for_status()
+        return response.content
+
+    def get_groups(self) -> str:
+        """Returns information on all XSOAR groups"""
+        if self.config.server_version < 8:
+            endpoint = "/groups"
+        else:
+            endpoint = "/rbac/get_groups"
+        response = self._make_request(endpoint=endpoint, method="GET")
+        response.raise_for_status()
+        return response.content
+
+    def get_user_groups(self) -> str:
+        """Returns information on all XSOAR user groups"""
+        if self.config.server_version < 8:
+            endpoint = "/user_groups"
+        else:
+            endpoint = "/rbac/get_user_groups"
+        response = self._make_request(endpoint=endpoint, method="GET")
+        response.raise_for_status()
+        return response.content
+
     def download_item(self, item_type: str, item_id: str) -> bytes:
         if item_type == "playbook":
             endpoint = f"/{item_type}/{item_id}/yaml"
