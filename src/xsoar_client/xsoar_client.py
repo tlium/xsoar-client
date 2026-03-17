@@ -10,6 +10,7 @@ import requests
 from .artifact_providers import BaseArtifactProvider
 from .cases import Cases
 from .config import ClientConfig
+from .constants import HTTP_CALL_TIMEOUT, XSOAR_OLD_VERSION
 from .content import Content
 from .integrations import Integrations
 from .packs import Packs
@@ -20,8 +21,6 @@ if TYPE_CHECKING:
 
 JSONType: TypeAlias = dict | list | None
 
-XSOAR_OLD_VERSION = 6
-HTTP_CALL_TIMEOUT = 30
 
 requests.packages.urllib3.disable_warnings()  # ty: ignore[unresolved-attribute]
 

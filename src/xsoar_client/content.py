@@ -4,6 +4,8 @@ import tarfile
 from io import BytesIO, StringIO
 from typing import TYPE_CHECKING
 
+from requests.models import Response
+
 if TYPE_CHECKING:
     from .xsoar_client import Client
 
@@ -29,9 +31,20 @@ class Content:
                     loaded_files[file_name] = file_data
         return loaded_files
 
-    def get_detached(self, content_type: str | None):
-        """Returns detached content. Currently supports script, playbooks, layouts."""
-        pass
+    def get_detached(self, content_type: str | None) -> Response:
+        """Returns detached content. Currently supports script, playbooks, layouts.
+        Where content_type must be either "playbooks" or "scripts".
+        """
+        payload = {"query": "system:T"}
+        if content_type == "playbooks":
+            endpoint = "/automation/search"
+        elif content_type == "scripts":
+            endpoint = "/playbook/search"
+        else:
+            raise ValueError(f"Invalid value {content_type=}")
+        response = self.client._make_request(endpoint=endpoint, method="POST", json=payload)
+        response.raise_for_status()
+        return response
 
     def download_item(self, item_type: str, item_id: str) -> bytes:
         """Downloads a content item by type and ID."""
