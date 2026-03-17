@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .xsoar_client import XSOAR_OLD_VERSION
+from .constants import XSOAR_OLD_VERSION
 
 if TYPE_CHECKING:
     from .xsoar_client import Client
