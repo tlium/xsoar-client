@@ -84,8 +84,9 @@ class Content:
         return response.json()
 
     def _list_scripts(self):
-        endpoint = ""
-        response = self.client._make_request(endpoint=endpoint, method="POST")
+        endpoint = "/automation/search"
+        payload = {"query": "", "stripContext": False}
+        response = self.client._make_request(endpoint=endpoint, json=payload, method="POST")
         response.raise_for_status()
         return response.json()
 
