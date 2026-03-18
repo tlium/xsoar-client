@@ -76,3 +76,32 @@ class Content:
             msg = 'Uknown item_type selected. Must be one of ["playbook"]'
             raise ValueError(msg)
         response.raise_for_status()
+
+    def _list_playbooks(self):
+        endpoint = ""
+        response = self.client._make_request(endpoint=endpoint, method="POST")
+        response.raise_for_status()
+        return response.json()
+
+    def _list_scripts(self):
+        endpoint = ""
+        response = self.client._make_request(endpoint=endpoint, method="POST")
+        response.raise_for_status()
+        return response.json()
+
+    def _list_commands(self):
+        endpoint = "/user/commands"
+        response = self.client._make_request(endpoint=endpoint, method="GET")
+        response.raise_for_status()
+        return response.json()
+
+    def list(self, item_type: str):
+        if item_type == "playbooks":
+            return self._list_playbooks()
+        if item_type == "scripts":
+            return self._list_scripts()
+        if item_type == "commands":
+            return self._list_commands()
+        if item_type == "all":
+            return {"playbooks": self._list_playbooks(), "scripts": self._list_scripts(), "commands": self._list_commands()}
+        raise ValueError(f"ERROR: list command received invalid argument {item_type=}")
