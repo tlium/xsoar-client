@@ -78,14 +78,16 @@ class Content:
         response.raise_for_status()
 
     def _list_playbooks(self):
-        endpoint = ""
-        response = self.client._make_request(endpoint=endpoint, method="POST")
+        endpoint = "/playbook/search"
+        payload = {"query": "hidden:F AND deprecated:F"}
+        response = self.client._make_request(endpoint=endpoint, json=payload, method="POST")
         response.raise_for_status()
         return response.json()
 
     def _list_scripts(self):
-        endpoint = ""
-        response = self.client._make_request(endpoint=endpoint, method="POST")
+        endpoint = "/automation/search"
+        payload = {"query": "", "stripContext": False}
+        response = self.client._make_request(endpoint=endpoint, json=payload, method="POST")
         response.raise_for_status()
         return response.json()
 
