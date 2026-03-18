@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import tarfile
 from io import BytesIO, StringIO
-from multiprocessing import Value
 from typing import TYPE_CHECKING
 
 from requests.models import Response
