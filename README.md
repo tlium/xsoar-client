@@ -1,3 +1,5 @@
+> **DEPRECATED** -- This project has been merged into [xsoar-cli](https://github.com/tlium/xsoar-cli) and will receive no further updates.
+
 # xsoar-client
 
 Python client library for Palo Alto XSOAR (formerly Demisto). Provides programmatic access to XSOAR servers for content pack management, case operations, and artifact handling.

@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "xsoar-client"
 dynamic = ["version"]
-description = ''
+description = 'DEPRECATED - This package has been merged into xsoar-cli. See https://github.com/tlium/xsoar-cli'
 readme = "README.md"
 requires-python = ">=3.10, <=3.14"
 license = "MIT"
 keywords = []
 authors = [{ name = "Torbjørn Lium", email = "torben@lium.org" }]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 7 - Inactive",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
